@@ -1,11 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { authClient } from "../lib/auth-client";
+
 import {
   getNotes,
   createNote,
   updateNote,
   deleteNote,
+  togglePinNote,
 } from "../server/function";
 
 export const Route = createFileRoute("/")({
@@ -17,23 +19,48 @@ type Note = {
   title: string;
   content: string;
   tag: string;
-  createdAt: Date;
   userId: string;
+  isPinned: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 };
+
+type FilterType = "ALL" | "PERSONAL" | "WORK" | "STUDY";
+
+type SortType =
+  | "NEWEST"
+  | "OLDEST"
+  | "TITLE_ASC"
+  | "TITLE_DESC";
 
 function NotesPage() {
   const [notes, setNotes] = useState<Note[]>([]);
+
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [tag, setTag] = useState("PERSONAL");
+
   const [editingId, setEditingId] = useState<string | null>(null);
+
   const [loading, setLoading] = useState(true);
+
+  // SEARCH + FILTER + SORT
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const [activeFilter, setActiveFilter] =
+    useState<FilterType>("ALL");
+
+  const [sortBy, setSortBy] =
+    useState<SortType>("NEWEST");
 
   const { data: session } = authClient.useSession();
 
   useEffect(() => {
     if (session?.user?.id) {
       loadNotes();
+    } else {
+      setNotes([]);
+      setLoading(false);
     }
   }, [session?.user?.id]);
 
@@ -52,6 +79,7 @@ function NotesPage() {
       setNotes(result as Note[]);
     } catch (error) {
       console.error("Failed to load notes:", error);
+      alert("Failed to load notes");
     } finally {
       setLoading(false);
     }
@@ -75,9 +103,10 @@ function NotesPage() {
         await updateNote({
           data: {
             id: editingId,
-            title,
-            content,
+            title: title.trim(),
+            content: content.trim(),
             tag,
+            userId: session.user.id,
           },
         });
 
@@ -85,8 +114,8 @@ function NotesPage() {
       } else {
         await createNote({
           data: {
-            title,
-            content,
+            title: title.trim(),
+            content: content.trim(),
             tag,
             userId: session.user.id,
           },
@@ -106,6 +135,7 @@ function NotesPage() {
 
   function handleEdit(note: Note) {
     setEditingId(note.id);
+
     setTitle(note.title);
     setContent(note.content);
     setTag(note.tag);
@@ -117,6 +147,8 @@ function NotesPage() {
   }
 
   async function handleDelete(id: string) {
+    if (!session?.user?.id) return;
+
     const confirmed = window.confirm(
       "Are you sure you want to delete this note?",
     );
@@ -127,6 +159,7 @@ function NotesPage() {
       await deleteNote({
         data: {
           id,
+          userId: session.user.id,
         },
       });
 
@@ -137,8 +170,28 @@ function NotesPage() {
     }
   }
 
+  async function handlePin(note: Note) {
+    if (!session?.user?.id) return;
+
+    try {
+      await togglePinNote({
+        data: {
+          id: note.id,
+          userId: session.user.id,
+          isPinned: !note.isPinned,
+        },
+      });
+
+      await loadNotes();
+    } catch (error) {
+      console.error("Failed to update pin:", error);
+      alert("Failed to update note");
+    }
+  }
+
   function handleCancelEdit() {
     setEditingId(null);
+
     setTitle("");
     setContent("");
     setTag("PERSONAL");
@@ -146,14 +199,93 @@ function NotesPage() {
 
   async function handleLogout() {
     await authClient.signOut();
+
     window.location.href = "/login";
   }
 
-  if (!session) {
+  // ===============================
+  // FILTER + SEARCH + SORT
+  // ===============================
+
+  const filteredNotes = useMemo(() => {
+    let result = [...notes];
+
+    // CATEGORY FILTER
+    if (activeFilter !== "ALL") {
+      result = result.filter(
+        (note) => note.tag === activeFilter,
+      );
+    }
+
+    // SEARCH FILTER
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+
+      result = result.filter(
+        (note) =>
+          note.title.toLowerCase().includes(query) ||
+          note.content.toLowerCase().includes(query),
+      );
+    }
+
+    // SORT NOTES
+    result.sort((a, b) => {
+      // PINNED NOTES ALWAYS FIRST
+      if (a.isPinned !== b.isPinned) {
+        return a.isPinned ? -1 : 1;
+      }
+
+      switch (sortBy) {
+        case "NEWEST":
+          return (
+            new Date(b.createdAt).getTime() -
+            new Date(a.createdAt).getTime()
+          );
+
+        case "OLDEST":
+          return (
+            new Date(a.createdAt).getTime() -
+            new Date(b.createdAt).getTime()
+          );
+
+        case "TITLE_ASC":
+          return a.title.localeCompare(
+            b.title,
+            undefined,
+            {
+              sensitivity: "base",
+            },
+          );
+
+        case "TITLE_DESC":
+          return b.title.localeCompare(
+            a.title,
+            undefined,
+            {
+              sensitivity: "base",
+            },
+          );
+
+        default:
+          return 0;
+      }
+    });
+
+    return result;
+  }, [
+    notes,
+    activeFilter,
+    searchQuery,
+    sortBy,
+  ]);
+
+  if (!session && !loading) {
     return (
       <main className="notes-page">
         <div className="login-required">
-          <div className="login-required-icon">🔒</div>
+          <div className="login-required-icon">
+            🔒
+          </div>
 
           <h1>Welcome to My Notes</h1>
 
@@ -179,28 +311,35 @@ function NotesPage() {
       <div className="background-orb orb-3"></div>
 
       <div className="notes-container">
+
+        {/* HEADER */}
+
         <header className="notes-header">
           <div className="brand">
             <div className="brand-icon">✦</div>
 
             <div>
               <h1>My Notes</h1>
-              <p>Organize your thoughts beautifully</p>
+
+              <p>
+                Organize your thoughts beautifully
+              </p>
             </div>
           </div>
 
-          {/* USER INFORMATION */}
           <div className="user-section">
             <div className="user-info">
               <span className="user-avatar">
-                {session.user.name?.charAt(0).toUpperCase() || "U"}
+                {session?.user?.name
+                  ?.charAt(0)
+                  .toUpperCase() || "U"}
               </span>
 
               <div className="user-email">
                 <span>Welcome</span>
 
                 <strong>
-                  {session.user.name || "User"}
+                  {session?.user?.name || "User"}
                 </strong>
               </div>
             </div>
@@ -214,11 +353,15 @@ function NotesPage() {
           </div>
         </header>
 
+        {/* NOTE FORM */}
+
         <section className="note-form-card">
           <div className="form-header">
             <div>
               <span className="section-label">
-                {editingId ? "EDITING NOTE" : "NEW NOTE"}
+                {editingId
+                  ? "EDITING NOTE"
+                  : "NEW NOTE"}
               </span>
 
               <h2>
@@ -241,7 +384,9 @@ function NotesPage() {
                 type="text"
                 placeholder="Give your note a title..."
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) =>
+                  setTitle(e.target.value)
+                }
               />
             </div>
 
@@ -251,7 +396,9 @@ function NotesPage() {
               <textarea
                 placeholder="Write down your thoughts..."
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
+                onChange={(e) =>
+                  setContent(e.target.value)
+                }
                 rows={7}
               />
             </div>
@@ -262,7 +409,9 @@ function NotesPage() {
 
                 <select
                   value={tag}
-                  onChange={(e) => setTag(e.target.value)}
+                  onChange={(e) =>
+                    setTag(e.target.value)
+                  }
                 >
                   <option value="PERSONAL">
                     🌿 Personal
@@ -293,7 +442,10 @@ function NotesPage() {
                   type="submit"
                   className="primary-btn"
                 >
-                  {editingId ? "Update Note" : "Add Note"}
+                  {editingId
+                    ? "Update Note"
+                    : "Add Note"}
+
                   <span>→</span>
                 </button>
               </div>
@@ -301,7 +453,122 @@ function NotesPage() {
           </form>
         </section>
 
+        {/* SEARCH + FILTER + SORT SECTION */}
+
+        <section className="notes-filter-section">
+
+          {/* SEARCH */}
+
+          <div className="search-box">
+            <input
+              type="text"
+              placeholder="Search your notes..."
+              value={searchQuery}
+              onChange={(e) =>
+                setSearchQuery(e.target.value)
+              }
+            />
+          </div>
+
+          {/* CATEGORY FILTERS */}
+
+          <div className="filter-buttons">
+
+            <button
+              className={
+                activeFilter === "ALL"
+                  ? "filter-btn active"
+                  : "filter-btn"
+              }
+              onClick={() =>
+                setActiveFilter("ALL")
+              }
+            >
+              All
+            </button>
+
+            <button
+              className={
+                activeFilter === "PERSONAL"
+                  ? "filter-btn active"
+                  : "filter-btn"
+              }
+              onClick={() =>
+                setActiveFilter("PERSONAL")
+              }
+            >
+              🌿 Personal
+            </button>
+
+            <button
+              className={
+                activeFilter === "WORK"
+                  ? "filter-btn active"
+                  : "filter-btn"
+              }
+              onClick={() =>
+                setActiveFilter("WORK")
+              }
+            >
+              💼 Work
+            </button>
+
+            <button
+              className={
+                activeFilter === "STUDY"
+                  ? "filter-btn active"
+                  : "filter-btn"
+              }
+              onClick={() =>
+                setActiveFilter("STUDY")
+              }
+            >
+              📚 Study
+            </button>
+
+          </div>
+
+          {/* SORT */}
+
+          <div className="sort-container">
+            <label htmlFor="sort-notes">
+              Sort by
+            </label>
+
+            <select
+              id="sort-notes"
+              className="sort-select"
+              value={sortBy}
+              onChange={(e) =>
+                setSortBy(
+                  e.target.value as SortType,
+                )
+              }
+            >
+              <option value="NEWEST">
+                Newest First
+              </option>
+
+              <option value="OLDEST">
+                Oldest First
+              </option>
+
+              <option value="TITLE_ASC">
+                Title A → Z
+              </option>
+
+              <option value="TITLE_DESC">
+                Title Z → A
+              </option>
+            </select>
+          </div>
+
+        </section>
+
+        {/* NOTES SECTION */}
+
         <section className="notes-section">
+
           <div className="notes-section-header">
             <div>
               <span className="section-label">
@@ -313,8 +580,10 @@ function NotesPage() {
 
             {!loading && (
               <div className="notes-count">
-                {notes.length}{" "}
-                {notes.length === 1 ? "Note" : "Notes"}
+                {filteredNotes.length}{" "}
+                {filteredNotes.length === 1
+                  ? "Note"
+                  : "Notes"}
               </div>
             )}
           </div>
@@ -322,26 +591,40 @@ function NotesPage() {
           {loading ? (
             <div className="empty-state">
               <div className="loader"></div>
+
               <p>Loading your notes...</p>
             </div>
-          ) : notes.length === 0 ? (
+          ) : filteredNotes.length === 0 ? (
             <div className="empty-state">
-              <div className="empty-icon">✦</div>
+              <div className="empty-icon">
+                ✦
+              </div>
 
-              <h3>Your mind is a blank canvas</h3>
+              <h3>No notes found</h3>
 
               <p>
-                Start writing your first note and keep your ideas organized.
+                {searchQuery
+                  ? "Try a different search."
+                  : activeFilter !== "ALL"
+                    ? "There are no notes in this category yet."
+                    : "Create your first note and keep your ideas organized."}
               </p>
             </div>
           ) : (
             <div className="notes-grid">
-              {notes.map((note) => (
+
+              {filteredNotes.map((note) => (
                 <article
                   key={note.id}
-                  className="note-card"
+                  className={`note-card ${
+                    note.isPinned
+                      ? "pinned-note"
+                      : ""
+                  }`}
                 >
+
                   <div className="note-card-top">
+
                     <span
                       className={`note-tag ${note.tag.toLowerCase()}`}
                     >
@@ -349,21 +632,49 @@ function NotesPage() {
                     </span>
 
                     <div className="note-actions">
+
+                      {/* PIN */}
+
+                      <button
+                        className="pin-btn"
+                        onClick={() =>
+                          handlePin(note)
+                        }
+                        title={
+                          note.isPinned
+                            ? "Unpin note"
+                            : "Pin note"
+                        }
+                      >
+                        {note.isPinned
+                          ? "📌"
+                          : "📍"}
+                      </button>
+
+                      {/* EDIT */}
+
                       <button
                         className="edit-btn"
-                        onClick={() => handleEdit(note)}
+                        onClick={() =>
+                          handleEdit(note)
+                        }
                         title="Edit note"
                       >
                         ✎
                       </button>
 
+                      {/* DELETE */}
+
                       <button
                         className="delete-btn"
-                        onClick={() => handleDelete(note.id)}
+                        onClick={() =>
+                          handleDelete(note.id)
+                        }
                         title="Delete note"
                       >
                         ×
                       </button>
+
                     </div>
                   </div>
 
@@ -372,13 +683,21 @@ function NotesPage() {
                   <p>{note.content}</p>
 
                   <div className="note-card-footer">
-                    <span>✦ Saved note</span>
+                    <span>
+                      {note.isPinned
+                        ? "📌 Pinned note"
+                        : "✦ Saved note"}
+                    </span>
                   </div>
+
                 </article>
               ))}
+
             </div>
           )}
+
         </section>
+
       </div>
     </main>
   );

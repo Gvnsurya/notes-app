@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
-import { eq, desc } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
+
 import { db } from "../db";
 import { notes } from "../db/schema";
 
@@ -10,13 +11,16 @@ import { notes } from "../db/schema";
 export const getNotes = createServerFn({
   method: "GET",
 })
-  .inputValidator((data: { userId: string }) => data)
+  .validator((data: { userId: string }) => data)
   .handler(async ({ data }) => {
     const userNotes = await db
       .select()
       .from(notes)
       .where(eq(notes.userId, data.userId))
-      .orderBy(desc(notes.createdAt));
+      .orderBy(
+        desc(notes.isPinned),
+        desc(notes.createdAt),
+      );
 
     return userNotes;
   });
@@ -28,7 +32,7 @@ export const getNotes = createServerFn({
 export const createNote = createServerFn({
   method: "POST",
 })
-  .inputValidator(
+  .validator(
     (data: {
       title: string;
       content: string;
@@ -42,7 +46,7 @@ export const createNote = createServerFn({
       .values({
         title: data.title,
         content: data.content,
-        tag: data.tag as "PERSONAL" | "WORK" | "STUDY",
+        tag: data.tag,
         userId: data.userId,
       })
       .returning();
@@ -57,12 +61,13 @@ export const createNote = createServerFn({
 export const updateNote = createServerFn({
   method: "POST",
 })
-  .inputValidator(
+  .validator(
     (data: {
       id: string;
       title: string;
       content: string;
       tag: string;
+      userId: string;
     }) => data,
   )
   .handler(async ({ data }) => {
@@ -71,9 +76,15 @@ export const updateNote = createServerFn({
       .set({
         title: data.title,
         content: data.content,
-        tag: data.tag as "PERSONAL" | "WORK" | "STUDY",
+        tag: data.tag,
+        updatedAt: new Date(),
       })
-      .where(eq(notes.id, data.id))
+      .where(
+        and(
+          eq(notes.id, data.id),
+          eq(notes.userId, data.userId),
+        ),
+      )
       .returning();
 
     return updatedNote;
@@ -86,11 +97,56 @@ export const updateNote = createServerFn({
 export const deleteNote = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: { id: string }) => data)
+  .validator(
+    (data: {
+      id: string;
+      userId: string;
+    }) => data,
+  )
   .handler(async ({ data }) => {
-    await db.delete(notes).where(eq(notes.id, data.id));
+    const deletedNotes = await db
+      .delete(notes)
+      .where(
+        and(
+          eq(notes.id, data.id),
+          eq(notes.userId, data.userId),
+        ),
+      )
+      .returning();
 
     return {
-      success: true,
+      success: deletedNotes.length > 0,
     };
+  });
+
+// ===============================
+// PIN / UNPIN NOTE
+// ===============================
+
+export const togglePinNote = createServerFn({
+  method: "POST",
+})
+  .validator(
+    (data: {
+      id: string;
+      userId: string;
+      isPinned: boolean;
+    }) => data,
+  )
+  .handler(async ({ data }) => {
+    const [updatedNote] = await db
+      .update(notes)
+      .set({
+        isPinned: data.isPinned,
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(notes.id, data.id),
+          eq(notes.userId, data.userId),
+        ),
+      )
+      .returning();
+
+    return updatedNote;
   });

@@ -1244,3 +1244,776 @@ button {
     justify-content: flex-start;
   }
 }
+/* ==========================================
+   MODERN SEARCH + FILTER SECTION
+   ========================================== */
+
+.notes-filter-section {
+  position: relative;
+
+  margin: 32px 0 38px;
+
+  padding: 28px;
+
+  border: 1px solid rgba(140, 130, 255, 0.18);
+
+  border-radius: 24px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.055),
+      rgba(120, 100, 255, 0.035)
+    );
+
+  backdrop-filter: blur(14px);
+
+  box-shadow:
+    0 16px 45px rgba(0, 0, 0, 0.14);
+
+  overflow: hidden;
+}
+
+
+/* Decorative glow */
+
+.notes-filter-section::before {
+  content: "";
+
+  position: absolute;
+
+  width: 230px;
+  height: 230px;
+
+  top: -150px;
+  right: -100px;
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(112, 92, 255, 0.18),
+      transparent 70%
+    );
+
+  pointer-events: none;
+}
+
+
+/* =========================
+   FILTER HEADER
+========================= */
+
+.filter-top {
+  position: relative;
+
+  z-index: 1;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 20px;
+
+  margin-bottom: 24px;
+}
+
+
+.filter-title {
+  display: flex;
+
+  align-items: center;
+
+  gap: 14px;
+}
+
+
+.filter-title-icon {
+  width: 46px;
+  height: 46px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 14px;
+
+  font-size: 20px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(109, 93, 252, 0.25),
+      rgba(155, 108, 255, 0.15)
+    );
+
+  border: 1px solid rgba(155, 130, 255, 0.28);
+
+  box-shadow:
+    0 8px 20px rgba(90, 70, 255, 0.16);
+}
+
+
+.filter-title span:not(.filter-title-icon) {
+  display: block;
+
+  margin-bottom: 4px;
+
+  color: #918fa8;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  letter-spacing: 1.5px;
+}
+
+
+.filter-title h3 {
+  margin: 0;
+
+  color: #f2f1f8;
+
+  font-size: 20px;
+
+  font-weight: 700;
+}
+
+
+/* =========================
+   CLEAR FILTERS
+========================= */
+
+.clear-filters-btn {
+  padding: 9px 14px;
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  border-radius: 10px;
+
+  background:
+    rgba(255, 255, 255, 0.045);
+
+  color: #b8b6c9;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease,
+    border-color 0.2s ease;
+}
+
+
+.clear-filters-btn:hover {
+  transform: translateY(-2px);
+
+  background:
+    rgba(255, 80, 100, 0.1);
+
+  border-color:
+    rgba(255, 100, 120, 0.28);
+
+  color: #ffb5bd;
+}
+
+
+/* =========================
+   SEARCH BOX
+========================= */
+
+.search-box {
+  position: relative;
+
+  z-index: 1;
+
+  display: flex;
+
+  align-items: center;
+
+  width: 100%;
+}
+
+
+.search-icon {
+  position: absolute;
+
+  left: 17px;
+
+  z-index: 2;
+
+  font-size: 16px;
+
+  opacity: 0.75;
+
+  pointer-events: none;
+}
+
+
+.search-box input {
+  width: 100%;
+
+  height: 54px;
+
+  padding:
+    0 52px 0 48px;
+
+  border:
+    1px solid rgba(145, 135, 255, 0.18);
+
+  border-radius: 15px;
+
+  outline: none;
+
+  background:
+    rgba(9, 9, 20, 0.3);
+
+  color: #f5f4fa;
+
+  font-size: 15px;
+
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease;
+}
+
+
+.search-box input::placeholder {
+  color: #77758a;
+}
+
+
+.search-box input:focus {
+  border-color:
+    rgba(135, 115, 255, 0.65);
+
+  background:
+    rgba(15, 14, 32, 0.55);
+
+  box-shadow:
+    0 0 0 4px rgba(105, 85, 255, 0.1),
+    0 10px 30px rgba(70, 50, 180, 0.12);
+}
+
+
+.search-clear-btn {
+  position: absolute;
+
+  right: 12px;
+
+  width: 30px;
+  height: 30px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border: none;
+
+  border-radius: 9px;
+
+  background:
+    rgba(255, 255, 255, 0.07);
+
+  color: #c8c6d4;
+
+  font-size: 20px;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+
+.search-clear-btn:hover {
+  transform: rotate(90deg);
+
+  background:
+    rgba(255, 90, 110, 0.16);
+
+  color: #ffb8c0;
+}
+
+
+/* =========================
+   DIVIDER
+========================= */
+
+.filter-divider {
+  width: 100%;
+
+  height: 1px;
+
+  margin: 25px 0 20px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(150, 140, 255, 0.2),
+      transparent
+    );
+}
+
+
+.filter-label {
+  position: relative;
+
+  z-index: 1;
+
+  margin-bottom: 14px;
+
+  color: #9d9aad;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.8px;
+
+  text-transform: uppercase;
+}
+
+
+/* =========================
+   FILTER BUTTONS
+========================= */
+
+.filter-buttons {
+  position: relative;
+
+  z-index: 1;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 12px;
+}
+
+
+.filter-btn {
+  min-height: 56px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 9px;
+
+  padding: 10px 14px;
+
+  border:
+    1px solid rgba(255, 255, 255, 0.08);
+
+  border-radius: 14px;
+
+  background:
+    rgba(255, 255, 255, 0.035);
+
+  color: #bab8c8;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    color 0.2s ease;
+}
+
+
+.filter-btn:hover {
+  transform: translateY(-3px);
+
+  background:
+    rgba(255, 255, 255, 0.07);
+
+  border-color:
+    rgba(155, 140, 255, 0.3);
+
+  color: #f0eff6;
+
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.12);
+}
+
+
+.filter-icon {
+  font-size: 17px;
+}
+
+
+.filter-btn strong {
+  min-width: 24px;
+
+  height: 24px;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  margin-left: 2px;
+
+  padding: 0 6px;
+
+  border-radius: 8px;
+
+  background:
+    rgba(255, 255, 255, 0.08);
+
+  color: #d8d6e4;
+
+  font-size: 11px;
+}
+
+
+/* ACTIVE FILTER */
+
+.filter-btn.active {
+  transform: translateY(-2px);
+
+  border-color:
+    rgba(145, 120, 255, 0.6);
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(91, 72, 230, 0.65),
+      rgba(130, 82, 235, 0.55)
+    );
+
+  color: white;
+
+  box-shadow:
+    0 10px 28px rgba(100, 70, 255, 0.28);
+}
+
+
+.filter-btn.active strong {
+  background:
+    rgba(255, 255, 255, 0.2);
+
+  color: white;
+}
+
+
+/* PERSONAL */
+
+.personal-filter:hover {
+  border-color:
+    rgba(100, 210, 150, 0.35);
+}
+
+
+/* WORK */
+
+.work-filter:hover {
+  border-color:
+    rgba(100, 160, 255, 0.4);
+}
+
+
+/* STUDY */
+
+.study-filter:hover {
+  border-color:
+    rgba(255, 180, 80, 0.4);
+}
+
+
+/* =========================
+   FILTER STATUS
+========================= */
+
+.filter-status {
+  position: relative;
+
+  z-index: 1;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 6px;
+
+  margin-top: 20px;
+
+  color: #8f8c9f;
+
+  font-size: 13px;
+}
+
+
+.filter-status strong {
+  color: #dedcea;
+
+  font-weight: 700;
+}
+
+
+.filter-status-dot {
+  width: 7px;
+  height: 7px;
+
+  display: inline-block;
+
+  margin-right: 4px;
+
+  border-radius: 50%;
+
+  background: #8b6cff;
+
+  box-shadow:
+    0 0 10px rgba(139, 108, 255, 0.8);
+}
+
+
+/* =========================
+   EMPTY FILTER BUTTON
+========================= */
+
+.clear-empty-filters-btn {
+  margin-top: 18px;
+
+  padding: 11px 18px;
+
+  border:
+    1px solid rgba(140, 120, 255, 0.3);
+
+  border-radius: 12px;
+
+  background:
+    rgba(110, 90, 255, 0.1);
+
+  color: #c9c1ff;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+
+.clear-empty-filters-btn:hover {
+  transform: translateY(-2px);
+
+  background:
+    rgba(110, 90, 255, 0.2);
+
+  box-shadow:
+    0 8px 22px rgba(100, 80, 255, 0.18);
+}
+
+
+/* =========================
+   RESPONSIVE FILTERS
+========================= */
+
+@media (max-width: 850px) {
+  .filter-buttons {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+
+@media (max-width: 600px) {
+  .notes-filter-section {
+    padding: 20px;
+    border-radius: 20px;
+  }
+
+  .filter-top {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .clear-filters-btn {
+    width: 100%;
+  }
+
+  .filter-buttons {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-btn {
+    justify-content: flex-start;
+  }
+
+  .filter-btn strong {
+    margin-left: auto;
+  }
+
+  .search-box input {
+    height: 50px;
+  }
+}
+/* =========================================
+   ATTRACTIVE SORT FILTER
+========================================= */
+
+.sort-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px 8px 16px;
+
+  background: rgba(28, 34, 55, 0.9);
+
+  border: 1px solid rgba(122, 110, 255, 0.2);
+  border-radius: 14px;
+
+  box-shadow:
+    0 8px 25px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+
+  transition: all 0.25s ease;
+}
+
+.sort-wrapper:hover {
+  border-color: rgba(139, 125, 255, 0.45);
+
+  box-shadow:
+    0 10px 30px rgba(82, 67, 180, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.sort-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+
+  color: #9f9ab8;
+
+  white-space: nowrap;
+}
+
+.sort-label span {
+  font-size: 1rem;
+}
+
+.sort-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  min-width: 150px;
+
+  padding: 10px 42px 10px 14px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(104, 88, 205, 0.25),
+      rgba(67, 55, 140, 0.18)
+    );
+
+  color: #e8e7f2;
+
+  border: 1px solid rgba(132, 119, 255, 0.28);
+  border-radius: 10px;
+
+  font-size: 0.9rem;
+  font-weight: 600;
+
+  cursor: pointer;
+  outline: none;
+
+  transition: all 0.25s ease;
+}
+
+.sort-select:hover {
+  border-color: rgba(147, 132, 255, 0.6);
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(115, 96, 230, 0.35),
+      rgba(76, 62, 165, 0.25)
+    );
+}
+
+.sort-select:focus {
+  border-color: #8878ff;
+
+  box-shadow:
+    0 0 0 3px rgba(136, 120, 255, 0.14),
+    0 0 18px rgba(116, 96, 255, 0.15);
+}
+
+.sort-wrapper {
+  position: relative;
+}
+
+.sort-wrapper::after {
+  content: "⌄";
+
+  position: absolute;
+  right: 22px;
+
+  top: 50%;
+  transform: translateY(-52%);
+
+  color: #aaa3dc;
+
+  font-size: 1.1rem;
+  font-weight: 700;
+
+  pointer-events: none;
+}
+
+.sort-select option {
+  background: #1b2033;
+  color: #f0eff8;
+}
+
+/* Mobile responsiveness */
+
+@media (max-width: 650px) {
+  .sort-wrapper {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .sort-select {
+    min-width: 160px;
+  }
+}
