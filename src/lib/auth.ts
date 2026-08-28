@@ -16,5 +16,10 @@ export const auth = betterAuth({
     enabled: true,
   },
 
+  trustedOrigins: [
+    "http://localhost:3000",
+    "https://notes-app-nine-wheat.vercel.app",
+  ],
+
   plugins: [tanstackStartCookies()],
 });
