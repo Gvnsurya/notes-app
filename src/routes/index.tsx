@@ -44,6 +44,21 @@ function NotesPage() {
 
   const [loading, setLoading] = useState(true);
 
+  // DARK / LIGHT MODE
+  const [theme, setTheme] = useState<"light" | "dark">(() => {
+    if (typeof window === "undefined") return "light";
+
+    const savedTheme = localStorage.getItem("theme");
+
+    if (savedTheme === "dark" || savedTheme === "light") {
+      return savedTheme;
+    }
+
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+  });
+
   // SEARCH + FILTER + SORT
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -54,6 +69,16 @@ function NotesPage() {
     useState<SortType>("NEWEST");
 
   const { data: session } = authClient.useSession();
+
+  // APPLY THEME
+  useEffect(() => {
+    document.documentElement.setAttribute(
+      "data-theme",
+      theme,
+    );
+
+    localStorage.setItem("theme", theme);
+  }, [theme]);
 
   useEffect(() => {
     if (session?.user?.id) {
@@ -197,6 +222,12 @@ function NotesPage() {
     setTag("PERSONAL");
   }
 
+  function toggleTheme() {
+    setTheme((currentTheme) =>
+      currentTheme === "light" ? "dark" : "light",
+    );
+  }
+
   async function handleLogout() {
     await authClient.signOut();
 
@@ -328,6 +359,35 @@ function NotesPage() {
           </div>
 
           <div className="user-section">
+
+            {/* DARK / LIGHT MODE BUTTON */}
+
+            <button
+              type="button"
+              className="theme-toggle"
+              onClick={toggleTheme}
+              title={
+                theme === "light"
+                  ? "Switch to dark mode"
+                  : "Switch to light mode"
+              }
+              aria-label={
+                theme === "light"
+                  ? "Switch to dark mode"
+                  : "Switch to light mode"
+              }
+            >
+              <span className="theme-toggle-icon">
+                {theme === "light" ? "🌙" : "☀️"}
+              </span>
+
+              <span className="theme-toggle-text">
+                {theme === "light"
+                  ? "Dark"
+                  : "Light"}
+              </span>
+            </button>
+
             <div className="user-info">
               <span className="user-avatar">
                 {session?.user?.name
